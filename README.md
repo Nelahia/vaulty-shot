@@ -57,39 +57,34 @@ VaultyShot lives in your menu bar as a small folder icon and works silently in t
 
 ## Installation
 
-### Requirements
+### Homebrew (recommended)
 
-- macOS 14.0 (Sonoma) or later
-- Xcode 16+ (for building)
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (for project generation)
+```bash
+brew tap nelahia/tap
+brew install --cask vaultyshot
+```
+
+### Manual download
+
+1. Download `VaultyShot.zip` from the [latest release](https://github.com/Nelahia/vaulty-shot/releases/latest)
+2. Extract the archive
+3. Drag `VaultyShot.app` to `/Applications`
+4. Launch VaultyShot from Applications
 
 ### Build from source
 
+Requires macOS 14.0+, Xcode 16+, and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+
 ```bash
-# 1. Clone the repo
 git clone https://github.com/Nelahia/vaulty-shot.git
 cd vaulty-shot
-
-# 2. Install XcodeGen (if not installed)
 brew install xcodegen
-
-# 3. Generate the Xcode project
 xcodegen generate
-
-# 4. Build the app
 xcodebuild -project VaultyShot.xcodeproj \
   -scheme VaultyShot \
   -configuration Release \
   -derivedDataPath build
-
-# 5. Run the app
 open build/Build/Products/Release/VaultyShot.app
-```
-
-### Optional: Copy to Applications
-
-```bash
-sudo cp -R build/Build/Products/Release/VaultyShot.app /Applications/
 ```
 
 ### Launch at login (optional)
