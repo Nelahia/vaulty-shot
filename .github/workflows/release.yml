@@ -1,0 +1,58 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build
+        run: |
+          xcodebuild -project VaultyShot.xcodeproj \
+            -scheme VaultyShot \
+            -configuration Release \
+            -derivedDataPath build \
+            ONLY_ACTIVE_ARCH=NO
+
+      - name: Create ZIP
+        run: |
+          cd build/Build/Products/Release
+          zip -r ${{ github.workspace }}/VaultyShot.zip VaultyShot.app
+
+      - name: Get SHA256
+        id: sha
+        run: echo "sha256=$(shasum -a 256 VaultyShot.zip | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: VaultyShot.zip
+          body: |
+            ## VaultyShot ${{ github.ref_name }}
+
+            Menu bar app that automatically captures and organizes all your macOS screenshots.
+
+            ### Install via Homebrew
+            ```bash
+            brew tap nelahia/tap
+            brew install --cask vaultyshot
+            ```
+
+            ### Manual install
+            Download `VaultyShot.zip`, extract, drag `VaultyShot.app` to Applications.
+
+            ### Requirements
+            - macOS 14.0 (Sonoma) or later
+
+            **SHA256:** `${{ steps.sha.outputs.sha256 }}`
