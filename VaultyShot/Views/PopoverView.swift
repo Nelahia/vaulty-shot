@@ -35,12 +35,39 @@ struct PopoverView: View {
 
     private var contentView: some View {
         Group {
+            if appState.permissionDenied {
+                permissionBanner
+            }
             if appState.screenshots.isEmpty {
                 EmptyStateView()
             } else {
                 screenshotList
             }
         }
+    }
+
+    private var permissionBanner: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title2)
+                .foregroundStyle(.orange)
+            Text("VaultyShot needs access to your screenshot folder")
+                .font(.system(size: 12, weight: .medium))
+                .multilineTextAlignment(.center)
+            Text(appState.screenshotDirectory)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(.secondary)
+            Button("Open Privacy Settings") {
+                appState.openPrivacySettings()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 
     private var screenshotList: some View {

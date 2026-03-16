@@ -3,6 +3,7 @@ import Combine
 
 final class AppState: ObservableObject {
     @Published private(set) var screenshots: [ScreenshotItem] = []
+    @Published var permissionDenied = false
 
     private let storage = ScreenshotStorage()
     private let watcher = ScreenshotWatcher()
@@ -10,12 +11,19 @@ final class AppState: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     var vaultURL: URL { storage.vaultURL }
+    var screenshotDirectory: String { watcher.screenshotDir.path }
 
     func start() {
         storage.ensureVaultExists()
         loadExistingScreenshots()
         observeNewScreenshots()
         observeClipboard()
+    }
+
+    func openPrivacySettings() {
+        NSWorkspace.shared.open(
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
+        )
     }
 
     func deleteScreenshot(_ item: ScreenshotItem) {
@@ -57,6 +65,11 @@ final class AppState: ObservableObject {
     }
 
     private func observeNewScreenshots() {
+        watcher.onPermissionDenied = { [weak self] in
+            DispatchQueue.main.async {
+                self?.permissionDenied = true
+            }
+        }
         watcher.onNewScreenshot = { [weak self] url in
             guard let self else { return }
             guard let movedURL = self.storage.moveToVault(url) else { return }

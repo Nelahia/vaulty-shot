@@ -2,18 +2,35 @@ import Foundation
 
 final class ScreenshotWatcher {
     var onNewScreenshot: ((URL) -> Void)?
+    var onPermissionDenied: (() -> Void)?
 
     private var source: DispatchSourceFileSystemObject?
     private var knownFiles = Set<String>()
-    private let screenshotDir: URL
+    let screenshotDir: URL
 
     init() {
         screenshotDir = ScreenshotWatcher.resolveScreenshotDirectory()
     }
 
     func startWatching() {
+        guard verifyAccess() else {
+            onPermissionDenied?()
+            return
+        }
         snapshotCurrentFiles()
         watchDirectory()
+    }
+
+    private func verifyAccess() -> Bool {
+        do {
+            _ = try FileManager.default.contentsOfDirectory(
+                at: screenshotDir,
+                includingPropertiesForKeys: nil
+            )
+            return true
+        } catch {
+            return false
+        }
     }
 
     func stopWatching() {
